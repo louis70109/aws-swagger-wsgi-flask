@@ -4,18 +4,34 @@ from werkzeug.exceptions import Unauthorized
 from flask_restful_swagger_2 import Resource, swagger, Schema
 
 
-class TodosModel(Schema):
+class BasicTodosModel(Schema):
     type = 'object'
     properties = {
-        'name': {
+        'title': {
             'type': 'string'
         },
         'desc': {
             'type': 'string'
         }
     }
-    required = ['name']
-    required = ['desc']
+    required = ['title', 'desc']
+
+
+class QueryTodos(Schema):
+    type = 'object'
+    properties = {
+        'result': {
+            'type': 'array',
+            'items': BasicTodosModel
+        }
+    }
+
+
+class CreateTodos(Schema):
+    type = 'object'
+    properties = {
+        'result': BasicTodosModel
+    }
 
 
 class TodosController(Resource):
@@ -24,7 +40,7 @@ class TodosController(Resource):
         super().__init__(*args, **kwargs)
         self.login_request_parser = reqparse.RequestParser()
         self.login_request_parser.add_argument(
-            'name', required=True, help='name can not be blank!', location='json')
+            'title', required=True, help='title can not be blank!', location='json')
         self.login_request_parser.add_argument(
             'desc', required=True, help='desc can not be blank!', location='json')
 
@@ -34,6 +50,7 @@ class TodosController(Resource):
         'responses': {
             '200': {
                 'description': 'get todos',
+                'schema': QueryTodos,
                 'headers': {
                     'X-APP-KEY': {
                         'type': 'string',
@@ -43,11 +60,11 @@ class TodosController(Resource):
                 'examples': {
                     'application/json': {
                         'result': [{
-                            'name': 'name1',
+                            'title': 'title1',
                             'desc': 'lorem 1',
                             'id': 1
                         }, {
-                            'name': 'name2',
+                            'title': 'title2',
                             'desc': 'lorem 2',
                             'id': 2
                         }]
@@ -67,13 +84,11 @@ class TodosController(Resource):
         if app is not None:
             return {
                 'result': [{
-                    'name': 'name1',
-                    'desc': 'lorem 1',
-                    'id': 1
+                    'title': 'title1',
+                    'desc': 'lorem 1'
                 }, {
-                    'name': 'name2',
-                    'desc': 'lorem 2',
-                    'id': 2
+                    'title': 'title2',
+                    'desc': 'lorem 2'
                 }]}, 200
         raise Unauthorized('X-APP-KEY not found')
 
@@ -83,7 +98,7 @@ class TodosController(Resource):
         'responses': {
             '200': {
                 'description': 'create todo success',
-                'schema': TodosModel,
+                'schema': CreateTodos,
                 'headers': {
                     'X-APP-KEY': {
                         'type': 'string',
@@ -93,24 +108,23 @@ class TodosController(Resource):
                 'examples': {
                     'application/json': {
                         'result': {
-                            'id': 3,
-                            'name': 'name3',
+                            'title': 'title3',
                             'desc': 'lorem 3'
                         }
                     }
                 }
             },
             '400': {
-                'description': 'name & desc can not be blank',
+                'description': 'title & desc can not be blank',
                 'examples': {
-                    'application/json': {'message': {'name': 'name can not be blank!'}}
+                    'application/json': {'message': {'title': 'title can not be blank!'}}
                 }
             }
         }
     })
     def post(self):
         args = self.login_request_parser.parse_args()
-        name = args['name']
+        title = args['title']
         desc = args['desc']
 
-        return {'result': {'name': name, 'desc': desc}}, 200
+        return {'result': {'title': title, 'desc': desc}}, 200

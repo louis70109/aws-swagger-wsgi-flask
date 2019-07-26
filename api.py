@@ -15,9 +15,9 @@ security = {
 }
 
 api = Api(app,
-          #   schemes=['http'],
-          schemes=['https'],
-          base_path='/dev',
+          schemes=['http'],
+          #   schemes=['https'],
+          #   base_path='/dev',
           security_definitions=security,
           security=[{'appKey': []}],
           api_version='0.01',
